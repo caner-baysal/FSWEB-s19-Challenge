@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -20,25 +21,22 @@ public class Tweet {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "content")
+    @Column(name = "content", nullable = false, length = 280)
     private String content;
 
     @Column(name = "creation_date")
     private LocalDate creationDate;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany
-    @JoinColumn(name = "comment_id")
-    private List<Comment> comments;
+    @OneToMany(mappedBy = "tweet", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
-    @OneToMany
-    @JoinColumn(name = "like_id")
-    private List<Like> likes;
+    @OneToMany(mappedBy = "tweet", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Like> likes = new ArrayList<>();
 
-    @OneToMany
-    @JoinColumn(name = "retweet_id")
-    private List<Retweet> retweets;
+    @OneToMany(mappedBy = "tweet", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Retweet> retweets = new ArrayList<>();
 }

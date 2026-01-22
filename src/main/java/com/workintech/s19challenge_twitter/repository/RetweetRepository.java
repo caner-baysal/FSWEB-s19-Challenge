@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface RetweetRepository extends JpaRepository<Retweet, Long> {
-    Optional<Retweet> findByUserIdAndTweetId(Long userIdi, Long retweetId);
+    Optional<Retweet> findByUserIdAndTweetId(Long userId, Long tweetId);
 }

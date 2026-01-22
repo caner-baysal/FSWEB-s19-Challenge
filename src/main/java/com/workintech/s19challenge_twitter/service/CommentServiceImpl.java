@@ -4,6 +4,7 @@ import com.workintech.s19challenge_twitter.dto.CommentRequest;
 import com.workintech.s19challenge_twitter.entity.Comment;
 import com.workintech.s19challenge_twitter.entity.Tweet;
 import com.workintech.s19challenge_twitter.entity.User;
+import com.workintech.s19challenge_twitter.exceptions.CustomException;
 import com.workintech.s19challenge_twitter.repository.CommentRepository;
 import com.workintech.s19challenge_twitter.repository.TweetRepository;
 
@@ -11,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,7 +22,6 @@ import java.time.LocalTime;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
-    private final TweetService tweetService;
 
     private final CommentRepository commentRepository;
 
@@ -34,7 +35,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setContent(commentRequest.getContent());
         comment.setUser(user);
         comment.setTweet(tweet);
-        comment.setCreationDate(String.valueOf(LocalDateTime.now()));
+        comment.setCreationDate(LocalDateTime.now());
         return commentRepository.save(comment);
     }
 
@@ -45,7 +46,7 @@ public class CommentServiceImpl implements CommentService {
             throw new RuntimeException("Comment is not relate to this tweet");
 
         } if(!comment.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("Your are not allowed to change this comment");
+            throw new CustomException("Your are not allowed to change this comment " + commentId, HttpStatus.FORBIDDEN);
         } else {
             comment.setContent(commentRequest.getContent());
             return commentRepository.save(comment);
@@ -53,8 +54,12 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void deleteComment(Long id) {
-        Comment comment = commentRepository.findById(id).orElseThrow(() -> new RuntimeException("Comment not found"));
+    public void deleteComment(Long commentId, User user) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new RuntimeException("Comment not found"));
+        if (!comment.getUser().getId().equals(user.getId()) &&
+                !comment.getTweet().getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("You are not allowed to delete this comment");
+        }
         commentRepository.delete(comment);
     }
 }

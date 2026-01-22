@@ -26,7 +26,7 @@ public class LikeServiceImpl implements LikeService {
     @Override
     public String toggleLike(LikeRequest likeRequest, User user) {
         Tweet tweet = tweetRepository.findById(likeRequest.getTweetId()).orElseThrow(() -> new RuntimeException("Tweet not found"));
-        Optional<Like> existingLike = likeRepository.findByUserAndTweet(user.getId(), tweet.getId());
+        Optional<Like> existingLike = likeRepository.findByUserIdAndTweetId(user.getId(), tweet.getId());
         if(existingLike.isPresent()) {
             likeRepository.delete(existingLike.get());
             return "Like removed";

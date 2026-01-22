@@ -5,10 +5,12 @@ import com.workintech.s19challenge_twitter.dto.TweetRequest;
 import com.workintech.s19challenge_twitter.entity.Retweet;
 import com.workintech.s19challenge_twitter.entity.Tweet;
 import com.workintech.s19challenge_twitter.entity.User;
+import com.workintech.s19challenge_twitter.exceptions.CustomException;
 import com.workintech.s19challenge_twitter.repository.RetweetRepository;
 import com.workintech.s19challenge_twitter.repository.TweetRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -21,14 +23,12 @@ public class RetweetServiceImpl implements RetweetService {
 
     private final TweetRepository tweetRepository;
 
-    private final TweetRequest tweetRequest;
-
     @Override
     public Retweet retweetTweet(RetweetRequest retweetRequest, User user) {
         Tweet tweet = tweetRepository.findById(retweetRequest.getTweetId()).orElseThrow(() -> new RuntimeException("Tweet not found"));
         Optional<Retweet> existingRetweet = retweetRepository.findByUserIdAndTweetId(user.getId(), tweet.getId());
         if(existingRetweet.isPresent()) {
-            throw new RuntimeException("You have already retweeted this tweet");
+            throw new CustomException("You have already retweeted this tweet ", HttpStatus.BAD_REQUEST);
         } else {
             Retweet retweet = new Retweet();
             retweet.setUser(user);

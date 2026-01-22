@@ -1,7 +1,12 @@
 package com.workintech.s19challenge_twitter.exceptions;
 
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
+@Getter
 public class CustomException extends RuntimeException {
-    public CustomException(String message) {
+    private final HttpStatus httpStatus;
+    public CustomException(String message, HttpStatus httpStatus) {
         super(message);
+        this.httpStatus = httpStatus;
     }
 }

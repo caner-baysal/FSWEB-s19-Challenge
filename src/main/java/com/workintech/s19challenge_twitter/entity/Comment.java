@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,13 +22,13 @@ public class Comment {
     private String content;
 
     @Column(name = "creation_date")
-    private String creationDate;
+    private LocalDateTime creationDate;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "tweet_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "tweet_id", nullable = false)
     private Tweet tweet;
 }
