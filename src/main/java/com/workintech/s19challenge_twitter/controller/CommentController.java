@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @AllArgsConstructor
 @RestController
 @RequestMapping("/comment")
@@ -17,32 +19,49 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping
-    public ResponseEntity<?> createComment(@RequestBody CommentRequest commentRequest, @AuthenticationPrincipal User user) {
+    public ResponseEntity<?> createComment(@RequestBody CommentRequest commentRequest,
+                                           @AuthenticationPrincipal User user) {
         try {
             Comment comment = commentService.createComment(commentRequest, user);
-            return ResponseEntity.status(HttpStatus.CREATED).body(comment);
-        } catch(RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(toSafeResponse(comment));
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PutMapping("/{commentId}")
-    public ResponseEntity<?> updateComment(@PathVariable Long commentId, @RequestBody CommentRequest commentRequest, @AuthenticationPrincipal User user) {
+    public ResponseEntity<?> updateComment(@PathVariable Long commentId,
+                                           @RequestBody CommentRequest commentRequest,
+                                           @AuthenticationPrincipal User user) {
         try {
             Comment comment = commentService.updateComment(commentId, commentRequest, user);
-            return ResponseEntity.ok(comment);
-        } catch(RuntimeException e) {
+            return ResponseEntity.ok(toSafeResponse(comment));
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<?> deleteComment(@PathVariable Long commentId, @AuthenticationPrincipal User user) {
+    public ResponseEntity<?> deleteComment(@PathVariable Long commentId,
+                                           @AuthenticationPrincipal User user) {
         try {
             commentService.deleteComment(commentId, user);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    private Map<String, Object> toSafeResponse(Comment comment) {
+        return Map.of(
+                "id", comment.getId(),
+                "content", comment.getContent(),
+                "creationDate", comment.getCreationDate() != null ? comment.getCreationDate().toString() : "",
+                "tweetId", comment.getTweet().getId(),
+                "user", Map.of(
+                        "id", comment.getUser().getId(),
+                        "username", comment.getUser().getUsername()
+                )
+        );
     }
 }

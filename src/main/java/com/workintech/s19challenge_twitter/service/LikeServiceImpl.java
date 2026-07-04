@@ -6,8 +6,10 @@ import com.workintech.s19challenge_twitter.entity.Tweet;
 import com.workintech.s19challenge_twitter.entity.User;
 import com.workintech.s19challenge_twitter.repository.LikeRepository;
 import com.workintech.s19challenge_twitter.repository.TweetRepository;
+import com.workintech.s19challenge_twitter.exceptions.CustomException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -25,7 +27,7 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     public String toggleLike(LikeRequest likeRequest, User user) {
-        Tweet tweet = tweetRepository.findById(likeRequest.getTweetId()).orElseThrow(() -> new RuntimeException("Tweet not found"));
+        Tweet tweet = tweetRepository.findById(likeRequest.getTweetId()).orElseThrow(() -> new CustomException("Tweet not found", HttpStatus.NOT_FOUND));
         Optional<Like> existingLike = likeRepository.findByUserIdAndTweetId(user.getId(), tweet.getId());
         if(existingLike.isPresent()) {
             likeRepository.delete(existingLike.get());

@@ -6,23 +6,29 @@ import com.workintech.s19challenge_twitter.entity.User;
 import com.workintech.s19challenge_twitter.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @AllArgsConstructor
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    @Autowired
     private final UserService userService;
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         try {
             User registeredUser = userService.registerUser(registerRequest);
-            return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser);
+            // return only safe fields, never the full entity
+            Map<String, Object> response = Map.of(
+                    "id", registeredUser.getId(),
+                    "username", registeredUser.getUsername(),
+                    "email", registeredUser.getEmail()
+            );
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -33,7 +39,7 @@ public class AuthController {
         try {
             String loginMessage = userService.loginUser(loginRequest);
             return ResponseEntity.ok(loginMessage);
-        } catch(RuntimeException e) {
+        } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }

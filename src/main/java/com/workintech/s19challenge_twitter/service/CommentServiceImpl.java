@@ -30,7 +30,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Comment createComment(CommentRequest commentRequest, User user) {
-        Tweet tweet = tweetRepository.findById(commentRequest.getTweetId()).orElseThrow(() -> new RuntimeException("Tweet not found"));
+        Tweet tweet = tweetRepository.findById(commentRequest.getTweetId()).orElseThrow(() -> new CustomException("Tweet not found", HttpStatus.NOT_FOUND));
         Comment comment = new Comment();
         comment.setContent(commentRequest.getContent());
         comment.setUser(user);
@@ -41,11 +41,10 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public Comment updateComment(Long commentId, CommentRequest commentRequest, User user) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new RuntimeException("Comment not found"));
-        if(comment.getTweet() == null) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CustomException("Comment not found", HttpStatus.NOT_FOUND));
+        /*if(comment.getTweet() == null) {
             throw new RuntimeException("Comment is not relate to this tweet");
-
-        } if(!comment.getUser().getId().equals(user.getId())) {
+        }*/ if(!comment.getUser().getId().equals(user.getId())) {
             throw new CustomException("Your are not allowed to change this comment " + commentId, HttpStatus.FORBIDDEN);
         } else {
             comment.setContent(commentRequest.getContent());
@@ -55,10 +54,10 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void deleteComment(Long commentId, User user) {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new RuntimeException("Comment not found"));
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CustomException("Comment not found", HttpStatus.NOT_FOUND));
         if (!comment.getUser().getId().equals(user.getId()) &&
                 !comment.getTweet().getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("You are not allowed to delete this comment");
+            throw new CustomException("You are not allowed to delete this comment", HttpStatus.FORBIDDEN);
         }
         commentRepository.delete(comment);
     }

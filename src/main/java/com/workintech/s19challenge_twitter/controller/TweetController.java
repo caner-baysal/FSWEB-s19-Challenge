@@ -1,6 +1,7 @@
 package com.workintech.s19challenge_twitter.controller;
 
 import com.workintech.s19challenge_twitter.dto.TweetRequest;
+import com.workintech.s19challenge_twitter.dto.TweetResponse;
 import com.workintech.s19challenge_twitter.entity.Tweet;
 import com.workintech.s19challenge_twitter.entity.User;
 import com.workintech.s19challenge_twitter.repository.TweetRepository;
@@ -25,7 +26,7 @@ public class TweetController {
     @PostMapping
     public ResponseEntity<?> createTweet(@Valid @RequestBody TweetRequest tweetRequest, @AuthenticationPrincipal User user) {
         try {
-            Tweet tweet = tweetService.createTweet(tweetRequest, user);
+            TweetResponse tweet = tweetService.createTweet(tweetRequest, user);
             return ResponseEntity.status(HttpStatus.CREATED).body(tweet);
         } catch(RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -34,33 +35,19 @@ public class TweetController {
 
 
     @GetMapping("/all")
-    public ResponseEntity<List<Tweet>> getAllTweets() {
-        List<Tweet> tweets = tweetRepository.findAll();
-        tweets.forEach(tweet -> {
-            if(tweet.getUser() != null) {
-                tweet.getUser().getUsername();
-            }
-        });
-        return ResponseEntity.ok(tweets);
+    public ResponseEntity<List<TweetResponse>> getAllTweets() {
+        return ResponseEntity.ok(tweetService.getAllTweets());
     }
 
     @GetMapping("/findByUserId")
     public ResponseEntity<?> tweetsByUserId(@RequestParam Long userId) {
-    System.out.println("=== DEBUG: Finding tweets for userId: " + userId);
-    List<Tweet> tweets = tweetService.tweetsByUserId(userId);
-    System.out.println("Found " + tweets.size() + " tweets");
-    if (!tweets.isEmpty()) {
-        System.out.println("First tweet user: " +
-                (tweets.get(0).getUser() != null ? tweets.get(0).getUser().getUsername() : "NULL"));
+        return ResponseEntity.ok(tweetService.getAllTweets());
     }
-    return ResponseEntity.ok(tweets);
-}
 
     @GetMapping("/findById")
     public ResponseEntity<?> getTweetById(@RequestParam Long tweetId) {
         try {
-            Tweet tweet = tweetService.getTweetById(tweetId);
-            return ResponseEntity.ok(tweet);
+            return ResponseEntity.ok(tweetService.getTweetById(tweetId));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -69,8 +56,7 @@ public class TweetController {
     @PutMapping("/{tweetId}")
     public ResponseEntity<?> updateTweet(@PathVariable Long tweetId, @RequestBody TweetRequest tweetRequest, @AuthenticationPrincipal User user) {
         try {
-            Tweet tweet = tweetService.updateTweet(tweetId, tweetRequest, user);
-            return ResponseEntity.ok(tweet);
+            return ResponseEntity.ok(tweetService.updateTweet(tweetId, tweetRequest, user));
         } catch(RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -55,14 +55,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                                .requestMatchers("/auth/register", "/auth/login").permitAll()
-                                .requestMatchers("/user/all").permitAll()
-                                .requestMatchers("tweet/all").permitAll()
-                                .requestMatchers("/tweet/findByUserId", "/tweet/findById").permitAll()
-                                .requestMatchers("/like/**").authenticated()
+                                .requestMatchers("/auth/register", "/auth/login", "/test").permitAll()
+                                //.requestMatchers("/user/all").permitAll()
+                                //.requestMatchers("tweet/all").permitAll()
+                                .requestMatchers(HttpMethod.GET,"/tweet/findByUserId", "/tweet/findById", "/tweet/all", "/user/all").permitAll()
+                                /*.requestMatchers("/like/**").authenticated()
                                 .requestMatchers("/comment").authenticated()
                                 .requestMatchers("/retweet/**").authenticated()
-                                .requestMatchers("/tweet").authenticated()
+                                .requestMatchers("/tweet").authenticated()*/
                                 .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
@@ -74,7 +74,7 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> {
-            System.out.println("Athentication Debug");
+            System.out.println("Authentication Debug");
             System.out.println("Searching For Username: " + username);
             User user = userRepository.findByUsername(username);
             if (user == null) {
@@ -82,13 +82,14 @@ public class SecurityConfig {
 
                 throw new UsernameNotFoundException("User not found " + username);
             }
-            System.out.println("User Successfully Found: " + user.getUsername());
-            System.out.println("Password Hash: " + user.getPassword());
-            return org.springframework.security.core.userdetails.User.builder()
-                    .username(user.getUsername())
-                    .password(user.getPassword())
-                    .roles("USER")
-                    .build();
+            return user;
+//            System.out.println("User Successfully Found: " + user.getUsername());
+//            System.out.println("Password Hash: " + user.getPassword());
+//            return org.springframework.security.core.userdetails.User.builder()
+//                    .username(user.getUsername())
+//                    .password(user.getPassword())
+//                    .roles("USER")
+//                    .build();
         };
     }
 

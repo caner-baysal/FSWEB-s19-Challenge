@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @AllArgsConstructor
 @RestController
 @RequestMapping("/retweet")
@@ -17,20 +19,30 @@ public class RetweetController {
     private final RetweetService retweetService;
 
     @PostMapping
-    public ResponseEntity<?> retweetTweet(@RequestBody RetweetRequest retweetRequest, @AuthenticationPrincipal User user) {
+    public ResponseEntity<?> retweetTweet(@RequestBody RetweetRequest retweetRequest,
+                                          @AuthenticationPrincipal User user) {
         try {
             Retweet retweet = retweetService.retweetTweet(retweetRequest, user);
-            return ResponseEntity.status(HttpStatus.CREATED).body(retweet);
-        } catch(RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "id", retweet.getId(),
+                    "tweetId", retweet.getTweet().getId(),
+                    "user", Map.of(
+                            "id", retweet.getUser().getId(),
+                            "username", retweet.getUser().getUsername()
+                    )
+            ));
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
     @DeleteMapping("/{retweetId}")
-    public ResponseEntity<?> deleteRetweet(@PathVariable Long retweetId, @AuthenticationPrincipal User user) {
+    public ResponseEntity<?> deleteRetweet(@PathVariable Long retweetId,
+                                           @AuthenticationPrincipal User user) {
         try {
             retweetService.deleteRetweet(retweetId, user);
             return ResponseEntity.noContent().build();
-        } catch(RuntimeException e) {
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -25,24 +26,22 @@ public class RetweetServiceImpl implements RetweetService {
 
     @Override
     public Retweet retweetTweet(RetweetRequest retweetRequest, User user) {
-        Tweet tweet = tweetRepository.findById(retweetRequest.getTweetId()).orElseThrow(() -> new RuntimeException("Tweet not found"));
-        Optional<Retweet> existingRetweet = retweetRepository.findByUserIdAndTweetId(user.getId(), tweet.getId());
-        if(existingRetweet.isPresent()) {
-            throw new CustomException("You have already retweeted this tweet ", HttpStatus.BAD_REQUEST);
-        } else {
+        Tweet tweet = tweetRepository.findById(retweetRequest.getTweetId()).orElseThrow(() -> new CustomException("Tweet not found", HttpStatus.NOT_FOUND));
+        retweetRepository.findByUserIdAndTweetId(user.getId(), tweet.getId()).ifPresent(r -> {
+            throw new CustomException("Already retweeted", HttpStatus.BAD_REQUEST);
+        });
             Retweet retweet = new Retweet();
             retweet.setUser(user);
             retweet.setTweet(tweet);
+            retweet.setCreationDate(LocalDateTime.now().toString());
             return retweetRepository.save(retweet);
-        }
-
     }
 
     @Override
     public void deleteRetweet(Long retweetId, User user) {
-        Retweet retweet = retweetRepository.findById(retweetId).orElseThrow(() -> new RuntimeException("Retweet not found"));
+        Retweet retweet = retweetRepository.findById(retweetId).orElseThrow(() -> new CustomException("Retweet not found", HttpStatus.NOT_FOUND));
         if(!retweet.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("You are not allowed to delete this retweet");
+            throw new CustomException("You are not allowed to delete this retweet", HttpStatus.FORBIDDEN);
         } else {
             retweetRepository.delete(retweet);
         }

@@ -1,14 +1,14 @@
     package com.workintech.s19challenge_twitter.entity;
 
+    import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
     import jakarta.persistence.*;
-    import lombok.AllArgsConstructor;
-    import lombok.Data;
-    import lombok.NoArgsConstructor;
+    import lombok.*;
 
     @Entity
+    @Getter
+    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    @Data
     @Table(name = "retweets", schema = "twitter_clone")
     public class Retweet {
         @Id
@@ -21,9 +21,13 @@
 
         @ManyToOne
         @JoinColumn(name = "user_id")
+        @JsonIgnoreProperties({"tweets", "likes", "retweets", "comments",
+                "password", "authorities", "accountNonExpired",
+                "accountNonLocked", "credentialsNonExpired", "enabled"})
         private User user;
 
         @ManyToOne
         @JoinColumn(name = "tweet_id")
+        @JsonIgnoreProperties({"comments", "likes", "retweets", "user"})
         private Tweet tweet;
     }
